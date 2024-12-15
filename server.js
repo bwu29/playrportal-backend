@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -14,7 +13,7 @@ const app = express();
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'https://playrportal.vercel.app',
+  origin: process.env.CORS_ORIGIN,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -23,7 +22,7 @@ app.use(cors({
 // Handle preflight requests
 app.options('*', (req, res) => {
   res.header('Access-Control-Allow-Credentials', true);
-  res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || 'https://playrportal.vercel.app');
+  res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN);
   res.status(200).send();
 });
 
@@ -41,12 +40,6 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
-
-// Debug middleware to log requests
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
 
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://brawu3:B%21%40XW3@playrportal.nmiuc.mongodb.net/playrportal?retryWrites=true&w=majority&appName=playrportal";
@@ -68,27 +61,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/playerProfiles', playerProfiles);
 app.use('/api/clubProfiles', clubProfiles);
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '/build')));
-
-// The "catchall" handler: for any request that doesn't match one above, send back React's index.html file.
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '/build', 'index.html'));
-});
-
-// Catch-all error handler for undefined routes
-app.use('*', (req, res) => {
-  console.log('404 - Route not found:', req.originalUrl);
-  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
-});
-
 // Add error handling middleware at the end
 app.use((err, req, res, next) => {
   console.error(err.stack);
   if (err instanceof multer.MulterError) {
     // Handle Multer errors
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: 'File size too large. Maximum size is 10MB.' });
+      return res.status(400).json({ message: 'File size too large. Maximum size is 100MB.' });
     }
     return res.status(400).json({ message: err.message });
   }
@@ -99,5 +78,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log('CORS enabled for:', process.env.CORS_ORIGIN || 'https://playrportal.vercel.app');
+  console.log('CORS enabled for:', 'http://localhost:3000');
 });

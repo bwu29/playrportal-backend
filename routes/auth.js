@@ -23,99 +23,46 @@ router.post('/register', async (req, res) => {
   const { username, password, email, role } = req.body;
 
   try {
-    const existingUser = await User.findOne({ 
-      $or: [{ username }, { email }] 
-    });
-    
-    if (existingUser) {
-      return res.status(400).json({ 
-        success: false,
-        message: existingUser.username === username 
-          ? 'Username already exists' 
-          : 'Email already registered'
-      });
-    }
+    const existingUser = await User.findOne({ username });
+    if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
-    const user = new User({ 
-      username, 
-      password, // Will be hashed by pre-save middleware
-      email, 
-      role: role || 'player' 
-    });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ username, password: hashedPassword, email, role });
 
     await user.save();
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || 'fallback-secret-key',
-      { expiresIn: '1h' }
-    );
-
-    // Set user in session
-    req.session.user = {
-      id: user._id,
-      username: user.username,
-      role: user.role
-    };
-
-    // Respond with user data
-    res.status(201).json({
-      success: true,
-      user: {
-        id: user._id,
-        username: user.username,
-        role: user.role
-      },
-      token
-    });
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
+// Login User
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
     const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
-      });
-    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || 'fallback-secret-key',
-      { expiresIn: '1h' }
-    );
-
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    
+    // Set session data
     req.session.user = {
       id: user._id,
       username: user.username,
       role: user.role
     };
-
-    res.json({
-      success: true,
-      user: {
-        id: user._id,
-        username: user.username,
-        role: user.role
-      },
-      token
+    
+    res.json({ 
+      user: req.session.user,
+      isAuthenticated: true 
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
