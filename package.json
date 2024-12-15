@@ -1,7 +1,6 @@
 {
   "scripts": {
-    "start": "node server.js",
-    "heroku-postbuild": "cd ../playrportal-frontend && npm install && npm run build"
+    "start": "node server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
