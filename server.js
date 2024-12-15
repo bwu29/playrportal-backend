@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const multer = require('multer'); // Ensure multer is imported
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -78,5 +79,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log('CORS enabled for:', 'http://localhost:3000');
+  console.log('CORS enabled for:', process.env.CORS_ORIGIN);
 });
