@@ -33,6 +33,7 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
+    console.error('Error registering user:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -42,11 +43,19 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    console.log('Login attempt:', { username }); // Log login attempt
+
     const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      console.log('User not found:', { username }); // Log user not found
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) {
+      console.log('Invalid credentials for user:', { username }); // Log invalid credentials
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
     
@@ -56,12 +65,15 @@ router.post('/login', async (req, res) => {
       username: user.username,
       role: user.role
     };
+
+    console.log('User logged in:', req.session.user); // Log successful login
     
     res.json({ 
       user: req.session.user,
       isAuthenticated: true 
     });
   } catch (err) {
+    console.error('Error logging in user:', err);
     res.status(500).json({ error: err.message });
   }
 });
