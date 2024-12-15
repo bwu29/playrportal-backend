@@ -69,11 +69,11 @@ app.use('/api/playerProfiles', playerProfiles);
 app.use('/api/clubProfiles', clubProfiles);
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../playrportal-frontend/build')));
+app.use(express.static(path.join(__dirname, 'playrportal-frontend/build')));
 
 // The "catchall" handler: for any request that doesn't match one above, send back React's index.html file.
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../playrportal-frontend/build', 'index.html'));
+  res.sendFile(path.join(__dirname, 'playrportal-frontend/build', 'index.html'));
 });
 
 // Catch-all error handler for undefined routes
