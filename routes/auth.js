@@ -57,6 +57,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    console.log("JWT_SECRET:", process.env.JWT_SECRET); // Log the JWT_SECRET to ensure it's being loaded correctly
+
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined');
+    }
+
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
     
     // Set session data
@@ -70,10 +76,11 @@ router.post('/login', async (req, res) => {
     
     res.json({ 
       user: req.session.user,
+      token, // Include the token in the response
       isAuthenticated: true 
     });
   } catch (err) {
-    console.error('Error logging in user:', err);
+    console.error('Error logging in user:', err); // Log the error
     res.status(500).json({ error: err.message });
   }
 });
