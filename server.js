@@ -1,4 +1,4 @@
-require('dotenv').config(); // Load environment variables at the very beginning
+console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN);
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -7,10 +7,7 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const multer = require('multer'); // Ensure multer is imported
-
-// Log the JWT_SECRET to ensure it's being loaded correctly
-console.log("JWT_SECRET:", process.env.JWT_SECRET);
-console.log("SESSION_SECRET:", process.env.SESSION_SECRET);
+require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const playerProfiles = require('./routes/playerProfiles');
