@@ -2,6 +2,8 @@ const express = require('express');
 const multer = require('multer');
 const authMiddleware = require('../middleware/authMiddleware');
 const Player = require('../models/Player');
+const fs = require('fs');
+const path = require('path');
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -44,6 +46,32 @@ router.get('/profile', authMiddleware, async (req, res) => {
     res.status(200).json(playerProfile);
   } catch (err) {
     console.error('Error fetching profile:', err.message, err.stack);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Download Player CV
+router.get('/profile/downloadCV', authMiddleware, async (req, res) => {
+  try {
+    const playerProfile = await Player.findOne({ userId: req.user.id });
+    if (!playerProfile || !playerProfile.playerCV) {
+      return res.status(404).json({ message: 'CV not found' });
+    }
+
+    const base64String = playerProfile.playerCV;
+    const buffer = Buffer.from(base64String, 'base64');
+    const filePath = path.join(__dirname, '../temp', 'playerCV.pdf');
+
+    fs.writeFileSync(filePath, buffer);
+
+    res.download(filePath, 'playerCV.pdf', (err) => {
+      if (err) {
+        console.error('Error downloading CV:', err);
+      }
+      fs.unlinkSync(filePath); // Delete the file after sending it to the client
+    });
+  } catch (err) {
+    console.error('Error downloading CV:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
