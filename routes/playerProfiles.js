@@ -71,26 +71,33 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
     }
 
     const updateData = {
-      playerName,
-      birthYear,
-      proExperience,
-      positions: typeof positions === 'string' ? JSON.parse(positions) : positions,
-      citizenship: typeof citizenship === 'string' ? JSON.parse(citizenship) : citizenship,
-      highlightVideo,
-      fullMatchVideo,
-      email,
-      whatsapp,
-      agentEmail,
-      availability
+      playerName: playerName || "",
+      birthYear: birthYear || null,
+      proExperience: proExperience || null,
+      positions: typeof positions === 'string' ? JSON.parse(positions) : positions || [],
+      citizenship: typeof citizenship === 'string' ? JSON.parse(citizenship) : citizenship || [],
+      highlightVideo: highlightVideo || "",
+      fullMatchVideo: fullMatchVideo || "",
+      email: email || "",
+      whatsapp: whatsapp || "",
+      agentEmail: agentEmail || "",
+      availability: availability || ""
     };
 
     if (profileImageBase64) {
       updateData.profileImage = profileImageBase64;
       updateData.profileImageName = profileImageName;
+    } else {
+      updateData.profileImage = "";
+      updateData.profileImageName = "";
     }
+
     if (playerCVBase64) {
       updateData.playerCV = playerCVBase64;
       updateData.playerCVName = playerCVName;
+    } else {
+      updateData.playerCV = "";
+      updateData.playerCVName = "";
     }
 
     const updatedProfile = await Player.findOneAndUpdate(
