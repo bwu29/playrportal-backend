@@ -13,6 +13,10 @@ const upload = multer({
       if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
         return cb(new Error('Only jpg, jpeg, and png files are allowed for profile pictures!'), false);
       }
+    } else if (file.fieldname === "playerCV") {
+      if (!file.originalname.match(/\.(pdf)$/)) {
+        return cb(new Error('Only pdf files are allowed for CV!'), false);
+      }
     }
     cb(null, true);
   },
@@ -20,6 +24,11 @@ const upload = multer({
     fileSize: 100 * 1024 * 1024 // Set file size limit to 100MB
   }
 });
+
+const uploadFields = upload.fields([
+  { name: 'profileImage', maxCount: 1 },
+  { name: 'playerCV', maxCount: 1 }
+]);
 
 const router = express.Router();
 
@@ -36,15 +45,22 @@ router.get('/profile', authMiddleware, async (req, res) => {
 });
 
 // Update Player Profile
-router.put('/profile', authMiddleware, upload.single('profileImage'), async (req, res) => {
-  const { name, birthYear, positions, citizenship, experience, profileImage } = req.body;
+router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
+  const { name, birthYear, positions, citizenship, experience } = req.body;
+  const profileImage = req.files['profileImage'] ? req.files['profileImage'][0].buffer.toString('base64') : undefined;
+  const playerCV = req.files['playerCV'] ? req.files['playerCV'][0].buffer.toString('base64') : undefined;
 
   try {
     const updatedProfile = await Player.findOneAndUpdate(
       { userId: req.user.id },
-      { name, birthYear, experience, profileImage,
-        positions: Array.isArray(positions) ? positions : [],
-        citizenship: Array.isArray(citizenship) ? citizenship : []
+      { 
+        name, 
+        birthYear, 
+        experience, 
+        profileImage: profileImage || undefined,
+        playerCV: playerCV || undefined,
+        positions: Array.isArray(positions) ? JSON.parse(positions) : [],
+        citizenship: Array.isArray(citizenship) ? JSON.parse(citizenship) : []
       },
       { new: true }
     );

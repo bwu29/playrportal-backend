@@ -8,7 +8,8 @@ const playerSchema = new mongoose.Schema({
   citizenship: { type: [String], default: [] },  // An array of strings
   currentAvailability: { type: String },
   experience: { type: Number },
-  profileImage: { type: String }
+  profileImage: { type: String },
+  playerCV: { type: String }
 });
 
 module.exports = mongoose.model('Player', playerSchema);
