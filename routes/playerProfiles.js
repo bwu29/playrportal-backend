@@ -53,9 +53,18 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
   try {
     const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
 
-    const profileImage = req.files['profileImage'] ? req.files['profileImage'][0].buffer.toString('base64') : null;
-    const playerCV = req.files['playerCV'] ? req.files['playerCV'][0].buffer.toString('base64') : null;
-  
+    let profileImageBase64 = null;
+    let playerCVBase64 = null;
+
+    if (req.files && req.files['profileImage']) {
+      const profileImageBuffer = req.files['profileImage'][0].buffer;
+      profileImageBase64 = profileImageBuffer.toString('base64');
+    }
+
+    if (req.files && req.files['playerCV']) {
+      const playerCVBuffer = req.files['playerCV'][0].buffer;
+      playerCVBase64 = playerCVBuffer.toString('base64');
+    }
 
     const updateData = {
       playerName: playerName || "",
@@ -69,8 +78,8 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
       whatsapp: whatsapp || "",
       agentEmail: agentEmail || "",
       availability: availability || "",
-      profileImage,
-      playerCV
+      profileImage: profileImageBase64,
+      playerCV: playerCVBase64
     };
 
     console.log('Updating profile with data:', updateData);
