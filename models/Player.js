@@ -9,9 +9,7 @@ const playerSchema = new mongoose.Schema({
   availability: { type: String },
   proExperience: { type: Number },
   profileImage: { type: String }, // Store as Base64 encoded string
-  profileImageName: { type: String }, // Store the file name
   playerCV: { type: String }, // Store as Base64 encoded string
-  playerCVName: { type: String }, // Store the file name
   highlightVideo: { type: String }, // Store as Base64 encoded string
   fullMatchVideo: { type: String }, // Store as Base64 encoded string
   email: { type: String },          // Add this field
