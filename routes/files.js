@@ -1,12 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { gfsBucket } = require('../db');
+const { getGridFSBucket } = require('../db');
 const router = express.Router();
 
 router.get('/:id', async (req, res) => {
   try {
     const fileId = new mongoose.Types.ObjectId(req.params.id);
-    const downloadStream = gfsBucket.openDownloadStream(fileId);
+    const gridFSBucket = getGridFSBucket();
+    const downloadStream = gridFSBucket.openDownloadStream(fileId);
 
     downloadStream.on('data', (chunk) => {
       res.write(chunk);

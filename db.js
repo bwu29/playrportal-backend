@@ -10,10 +10,10 @@ mongoose.connect(process.env.MONGO_URI, {
 
 const connection = mongoose.connection;
 
-let gfsBucket;
+let gridFSBucket;
 connection.once('open', () => {
   try {
-    gfsBucket = new GridFSBucket(connection.db, {
+    gridFSBucket = new GridFSBucket(connection.db, {
       bucketName: 'uploads'
     });
     console.log('GridFSBucket initialized');
@@ -22,4 +22,11 @@ connection.once('open', () => {
   }
 });
 
-module.exports = { connection, gfsBucket };
+const getGridFSBucket = () => {
+  if (!gridFSBucket) {
+    throw new Error('GridFSBucket is not initialized');
+  }
+  return gridFSBucket;
+};
+
+module.exports = { connection, getGridFSBucket };
