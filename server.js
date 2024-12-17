@@ -16,6 +16,9 @@ const clubProfiles = require('./routes/clubProfiles');
 
 const app = express();
 
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
 // CORS configuration
 app.use(cors({
   origin: process.env.CORS_ORIGIN.split(','),
