@@ -47,25 +47,25 @@ router.get('/profile', authMiddleware, async (req, res) => {
 // Update Player Profile
 router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
   const { playerName, birthYear, positions, citizenship, experience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail } = req.body;
-  const profileImage = req.files['profileImage'] ? req.files['profileImage'][0].buffer.toString('base64') : undefined;
-  const playerCV = req.files['playerCV'] ? req.files['playerCV'][0].buffer.toString('base64') : undefined;
+  const profileImage = req.files['profileImage'] ? req.files['profileImage'][0].buffer.toString('base64') : null;
+  const playerCV = req.files['playerCV'] ? req.files['playerCV'][0].buffer.toString('base64') : null;
 
   try {
     const updatedProfile = await Player.findOneAndUpdate(
       { userId: req.user.id },
       { 
-        playerName, // Changed to playerName
-        birthYear: birthYear, 
-        experience: experience, 
-        profileImage: profileImage !== undefined ? profileImage : null,
-        playerCV: playerCV !== undefined ? playerCV : null,
+        playerName, 
+        birthYear, 
+        experience, 
+        profileImage,
+        playerCV,
         positions: positions ? JSON.parse(positions) : [],
         citizenship: citizenship ? JSON.parse(citizenship) : [],
-        highlightVideo: highlightVideo,
-        fullMatchVideo: fullMatchVideo,
-        email: email,
-        whatsapp: whatsapp,
-        agentEmail: agentEmail
+        highlightVideo,
+        fullMatchVideo,
+        email,
+        whatsapp,
+        agentEmail
       },
       { new: true }
     );
