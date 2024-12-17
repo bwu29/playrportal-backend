@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const playerSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  playerName: { type: String, required: true }, 
+  playerName: { type: String }, // Remove required constraint
   birthYear: { type: Number },
   positions: { type: [String], default: [] },  // Array of strings
   citizenship: { type: [String], default: [] },  
