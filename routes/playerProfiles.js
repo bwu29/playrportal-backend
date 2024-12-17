@@ -111,19 +111,15 @@ const saveFileToGridFS = async (buffer, filename) => {
     try {
       const gridFSBucket = getGridFSBucket();
       const uploadStream = gridFSBucket.openUploadStream(filename);
-      uploadStream.end(buffer, (err, file) => {
-        if (err) {
-          console.error('Error saving file to GridFS:', err);
-          reject(err);
+      uploadStream.on('finish', (file) => {
+        console.log('File saved to GridFS:', file);
+        if (file && file._id) {
+          resolve(file._id);
         } else {
-          console.log('File saved to GridFS:', file);
-          if (file && file._id) {
-            resolve(file._id);
-          } else {
-            reject(new Error('File object is invalid'));
-          }
+          reject(new Error('File object is invalid'));
         }
       });
+      uploadStream.end(buffer);
     } catch (err) {
       console.error('Error in saveFileToGridFS:', err.message, err.stack);
       reject(err);
