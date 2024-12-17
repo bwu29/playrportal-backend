@@ -53,6 +53,8 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
   try {
     const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
 
+    console.log('req.files:', req.files); // Log req.files to verify it is populated
+
     let profileImageBase64 = null;
     let playerCVBase64 = null;
 
