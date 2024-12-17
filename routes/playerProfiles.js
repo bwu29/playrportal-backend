@@ -11,7 +11,9 @@ const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
     if (file.fieldname === "profileImage") {
-      if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      const ext = file.originalname.toLowerCase().match(/\.(jpg|jpeg|png)$/);
+
+      if (!ext) {
         console.error('Invalid file type for profile picture:', file.originalname);
         return cb(new Error('Only jpg, jpeg, and png files are allowed for profile pictures!'), false);
       }
@@ -118,6 +120,10 @@ const saveFileToGridFS = async (buffer, filename) => {
         } else {
           reject(new Error('File object is invalid'));
         }
+      });
+      uploadStream.on('error', (err) => {
+        console.error('Error during file upload:', err);
+        reject(err);
       });
       uploadStream.end(buffer);
     } catch (err) {
