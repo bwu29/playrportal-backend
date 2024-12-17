@@ -7,11 +7,13 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const multer = require('multer'); // Ensure multer is imported
+const bodyParser = require('body-parser'); // Add body-parser
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const playerProfiles = require('./routes/playerProfiles');
 const clubProfiles = require('./routes/clubProfiles');
+const files = require('./routes/files'); // Add files route
 
 const app = express();
 
@@ -33,6 +35,8 @@ app.options('*', (req, res) => {
 });
 
 app.use(express.json()); // JSON parsing middleware
+app.use(bodyParser.json()); // Add body-parser middleware
+app.use(bodyParser.urlencoded({ extended: true })); // Add body-parser middleware
 
 // Add session middleware and cookie-parser
 app.use(cookieParser());
@@ -66,6 +70,7 @@ mongoose
 app.use('/api/auth', authRoutes);
 app.use('/api/playerProfiles', playerProfiles);
 app.use('/api/clubProfiles', clubProfiles);
+app.use('/api/files', files); // Add files route
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));

@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
+const mongoose = require('mongoose');
 const { gfsBucket } = require('../db');  // Import the GridFS bucket
 const authMiddleware = require('../middleware/authMiddleware');
 const Player = require('../models/Player');
@@ -33,18 +33,6 @@ const uploadFields = upload.fields([
   { name: 'playerCV', maxCount: 1 }
 ]);
 
-// Add multer error handling middleware
-const handleMulterError = (err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    console.error('Multer error:', err);
-    return res.status(400).json({ error: `File upload error: ${err.message}` });
-  } else if (err) {
-    console.error('Upload error:', err);
-    return res.status(500).json({ error: err.message });
-  }
-  next();
-};
-
 const router = express.Router();
 
 // Get Player Profile
@@ -61,30 +49,27 @@ router.get('/profile', authMiddleware, async (req, res) => {
 });
 
 // Upload Files (Profile Image and CV) and Update Player Profile
-router.put('/profile', authMiddleware, uploadFields, handleMulterError, async (req, res) => {
+router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
   try {
     const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
 
-    let profileImageFile;
-    let playerCVFile;
+    let profileImageId;
+    let playerCVId;
 
     if (req.files && req.files['profileImage']) {
       const profileImageBuffer = req.files['profileImage'][0].buffer;
       const profileImageFilename = req.files['profileImage'][0].originalname;
 
       // Save the file to GridFS
-      const profileImageId = await saveFileToGridFS(profileImageBuffer, profileImageFilename, 'profileImage');
-
-      profileImageFile = { id: profileImageId, filename: profileImageFilename };
+      profileImageId = await saveFileToGridFS(profileImageBuffer, profileImageFilename);
     }
 
     if (req.files && req.files['playerCV']) {
       const playerCVBuffer = req.files['playerCV'][0].buffer;
       const playerCVFilename = req.files['playerCV'][0].originalname;
 
-      const playerCVId = await saveFileToGridFS(playerCVBuffer, playerCVFilename, 'playerCV');
-
-      playerCVFile = { id: playerCVId, filename: playerCVFilename };
+      // Save the file to GridFS
+      playerCVId = await saveFileToGridFS(playerCVBuffer, playerCVFilename);
     }
 
     const updateData = {
@@ -101,11 +86,11 @@ router.put('/profile', authMiddleware, uploadFields, handleMulterError, async (r
       availability
     };
 
-    if (profileImageFile) {
-      updateData.profileImage = profileImageFile;
+    if (profileImageId) {
+      updateData.profileImage = profileImageId;
     }
-    if (playerCVFile) {
-      updateData.playerCV = playerCVFile;
+    if (playerCVId) {
+      updateData.playerCV = playerCVId;
     }
 
     const updatedProfile = await Player.findOneAndUpdate(
@@ -116,12 +101,12 @@ router.put('/profile', authMiddleware, uploadFields, handleMulterError, async (r
 
     res.status(200).json(updatedProfile);
   } catch (err) {
-    console.error('Error updating profile:', err.message);
+    console.error('Error updating profile:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
 
-const saveFileToGridFS = async (buffer, filename, folder) => {
+const saveFileToGridFS = async (buffer, filename) => {
   return new Promise((resolve, reject) => {
     const uploadStream = gfsBucket.openUploadStream(filename);
     uploadStream.end(buffer, (err, file) => {
