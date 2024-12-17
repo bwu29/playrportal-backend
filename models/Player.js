@@ -6,10 +6,10 @@ const playerSchema = new mongoose.Schema({
   birthYear: { type: Number },
   positions: { type: [String], default: [] },  // Array of strings
   citizenship: { type: [String], default: [] },  
-  currentAvailability: { type: String },
-  experience: { type: Number },
-  profileImage: { type: String },
-  playerCV: { type: String },
+  availability: { type: String },
+  proExperience: { type: Number },
+  profileImage: { type: Buffer }, // Store as Buffer
+  playerCV: { type: Buffer }, // Store as Buffer
   highlightVideo: { type: String }, // Add this field
   fullMatchVideo: { type: String }, // Add this field
   email: { type: String },          // Add this field
