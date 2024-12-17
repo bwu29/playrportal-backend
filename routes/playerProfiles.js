@@ -51,20 +51,19 @@ router.get('/profile', authMiddleware, async (req, res) => {
 // Upload Files (Profile Image and CV) and Update Player Profile
 router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
   try {
+    console.log('req.files:', req.files); // Log req.files to verify it is populated
+    console.log('req.body:', req.body); // Log req.body to verify it is populated
+
     const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
 
     let profileImageBase64 = null;
     let playerCVBase64 = null;
-
-    console.log('Files received:', req.files);
-console.log('Body data:', req.body);
 
     if (req.files && req.files['profileImage']) {
       const profileImageBuffer = req.files['profileImage'][0].buffer;
       profileImageBase64 = profileImageBuffer.toString('base64');
     }
 
-    
     if (req.files && req.files['playerCV']) {
       const playerCVBuffer = req.files['playerCV'][0].buffer;
       playerCVBase64 = playerCVBuffer.toString('base64');
