@@ -10,8 +10,8 @@ const playerSchema = new mongoose.Schema({
   proExperience: { type: Number },
   profileImage: { type: String }, // Store as Base64 encoded string
   playerCV: { type: String }, // Store as Base64 encoded string
-  highlightVideo: { type: String }, // Add this field
-  fullMatchVideo: { type: String }, // Add this field
+  highlightVideo: { type: String }, // Store as Base64 encoded string
+  fullMatchVideo: { type: String }, // Store as Base64 encoded string
   email: { type: String },          // Add this field
   whatsapp: { type: String },       // Add this field
   agentEmail: { type: String }      // Add this field

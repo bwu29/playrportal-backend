@@ -13,7 +13,6 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const playerProfiles = require('./routes/playerProfiles');
 const clubProfiles = require('./routes/clubProfiles');
-const files = require('./routes/files'); // Add files route
 
 const app = express();
 
@@ -70,7 +69,6 @@ mongoose
 app.use('/api/auth', authRoutes);
 app.use('/api/playerProfiles', playerProfiles);
 app.use('/api/clubProfiles', clubProfiles);
-app.use('/api/files', files); // Add files route
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));

@@ -1,7 +1,5 @@
 const express = require('express');
 const multer = require('multer');
-const mongoose = require('mongoose');
-const { getGridFSBucket } = require('../db');  // Import the GridFS bucket getter
 const authMiddleware = require('../middleware/authMiddleware');
 const Player = require('../models/Player');
 
@@ -55,23 +53,17 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
   try {
     const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
 
-    let profileImageId;
-    let playerCVId;
+    let profileImageBase64;
+    let playerCVBase64;
 
     if (req.files && req.files['profileImage']) {
       const profileImageBuffer = req.files['profileImage'][0].buffer;
-      const profileImageFilename = req.files['profileImage'][0].originalname;
-
-      // Save the file to GridFS
-      profileImageId = await saveFileToGridFS(profileImageBuffer, profileImageFilename);
+      profileImageBase64 = profileImageBuffer.toString('base64');
     }
 
     if (req.files && req.files['playerCV']) {
       const playerCVBuffer = req.files['playerCV'][0].buffer;
-      const playerCVFilename = req.files['playerCV'][0].originalname;
-
-      // Save the file to GridFS
-      playerCVId = await saveFileToGridFS(playerCVBuffer, playerCVFilename);
+      playerCVBase64 = playerCVBuffer.toString('base64');
     }
 
     const updateData = {
@@ -88,11 +80,11 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
       availability
     };
 
-    if (profileImageId) {
-      updateData.profileImage = profileImageId;
+    if (profileImageBase64) {
+      updateData.profileImage = profileImageBase64;
     }
-    if (playerCVId) {
-      updateData.playerCV = playerCVId;
+    if (playerCVBase64) {
+      updateData.playerCV = playerCVBase64;
     }
 
     const updatedProfile = await Player.findOneAndUpdate(
@@ -107,30 +99,5 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-const saveFileToGridFS = async (buffer, filename) => {
-  return new Promise((resolve, reject) => {
-    try {
-      const gridFSBucket = getGridFSBucket();
-      const uploadStream = gridFSBucket.openUploadStream(filename);
-      uploadStream.on('finish', (file) => {
-        console.log('File saved to GridFS:', file);
-        if (file && file._id) {
-          resolve(file._id);
-        } else {
-          reject(new Error('File object is invalid'));
-        }
-      });
-      uploadStream.on('error', (err) => {
-        console.error('Error during file upload:', err);
-        reject(err);
-      });
-      uploadStream.end(buffer);
-    } catch (err) {
-      console.error('Error in saveFileToGridFS:', err.message, err.stack);
-      reject(err);
-    }
-  });
-};
 
 module.exports = router;
