@@ -54,7 +54,7 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
     const updatedProfile = await Player.findOneAndUpdate(
       { userId: req.user.id },
       { 
-        playerName, 
+        name, 
         birthYear, 
         experience, 
         profileImage: profileImage || undefined,
