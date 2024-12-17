@@ -42,7 +42,10 @@ router.put('/profile', authMiddleware, upload.single('profileImage'), async (req
   try {
     const updatedProfile = await Player.findOneAndUpdate(
       { userId: req.user.id },
-      { name, birthYear, positions, citizenship, experience, profileImage },
+      { name, birthYear, experience, profileImage,
+        positions: Array.isArray(positions) ? positions : [],
+        citizenship: Array.isArray(citizenship) ? citizenship : []
+      },
       { new: true }
     );
 
