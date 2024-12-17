@@ -59,13 +59,13 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
         experience, 
         profileImage: profileImage || undefined,
         playerCV: playerCV || undefined,
-        positions: Array.isArray(positions) ? JSON.parse(positions) : [],
-        citizenship: Array.isArray(citizenship) ? JSON.parse(citizenship) : []
+        positions: positions ? JSON.parse(positions) : [],
+        citizenship: citizenship ? JSON.parse(citizenship) : []
       },
       { new: true }
     );
 
-    res.status(200).json(updatedProfile);
+    res.status(200).json(updatedProfile); // Return updated profile data
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
