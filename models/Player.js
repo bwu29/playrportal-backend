@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const playerSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  name: { type: String, required: true },
+  playerName: { type: String, required: true }, // Changed to playerName
   birthYear: { type: Number },
   positions: { type: [String], default: [] },  // An array of strings
   citizenship: { type: [String], default: [] },  // An array of strings
