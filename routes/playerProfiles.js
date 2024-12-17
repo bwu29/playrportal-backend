@@ -39,15 +39,16 @@ router.get('/profile', authMiddleware, async (req, res) => {
     if (!playerProfile) return res.status(404).json({ message: 'Profile not found' });
 
     // Convert profileImage and playerCV to base64 strings
-    if (playerProfile.profileImage) {
+    if (playerProfile.profileImage && playerProfile.profileImage.data) {
       playerProfile.profileImage = playerProfile.profileImage.data.toString('base64');
     }
-    if (playerProfile.playerCV) {
+    if (playerProfile.playerCV && playerProfile.playerCV.data) {
       playerProfile.playerCV.data = playerProfile.playerCV.data.toString('base64');
     }
 
     res.status(200).json(playerProfile);
   } catch (err) {
+    console.error('Error fetching profile:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
@@ -91,10 +92,10 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
     }
 
     // Convert profileImage and playerCV to base64 strings
-    if (updatedProfile.profileImage) {
+    if (updatedProfile.profileImage && updatedProfile.profileImage.data) {
       updatedProfile.profileImage = updatedProfile.profileImage.data.toString('base64');
     }
-    if (updatedProfile.playerCV) {
+    if (updatedProfile.playerCV && updatedProfile.playerCV.data) {
       updatedProfile.playerCV.data = updatedProfile.playerCV.data.toString('base64');
     }
 
@@ -102,7 +103,7 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
 
     res.status(200).json(updatedProfile); // Return updated profile data
   } catch (err) {
-    console.error('Error updating profile:', err);
+    console.error('Error updating profile:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
