@@ -57,8 +57,8 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
         playerName, // Changed to playerName
         birthYear: birthYear, 
         experience: experience, 
-        profileImage: profileImage || undefined,
-        playerCV: playerCV || undefined,
+        profileImage: profileImage !== undefined ? profileImage : null,
+        playerCV: playerCV !== undefined ? playerCV : null,
         positions: positions ? JSON.parse(positions) : [],
         citizenship: citizenship ? JSON.parse(citizenship) : [],
         highlightVideo: highlightVideo,
