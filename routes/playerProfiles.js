@@ -18,7 +18,7 @@ const upload = multer({
         return cb(new Error('Only jpg, jpeg, and png files are allowed for profile pictures!'), false);
       }
     } else if (file.fieldname === "playerCV") {
-      if (!file.originalname.match(/\.(pdf)$/)) {
+      if (!file.originalname.toLowerCase().endsWith('.pdf')) {
         console.error('Invalid file type for CV:', file.originalname);
         return cb(new Error('Only pdf files are allowed for CV!'), false);
       }

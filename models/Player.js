@@ -8,8 +8,8 @@ const playerSchema = new mongoose.Schema({
   citizenship: { type: [String], default: [] },  
   availability: { type: String },
   proExperience: { type: Number },
-  profileImage: mongoose.Schema.Types.ObjectId,
-  playerCV: mongoose.Schema.Types.ObjectId,
+  profileImage: { type: String }, // Store as Base64 encoded string
+  playerCV: { type: String }, // Store as Base64 encoded string
   highlightVideo: { type: String }, // Add this field
   fullMatchVideo: { type: String }, // Add this field
   email: { type: String },          // Add this field
