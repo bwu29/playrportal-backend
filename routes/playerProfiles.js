@@ -67,13 +67,18 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
         whatsapp,
         agentEmail
       },
-      { new: true }
+      { new: true, upsert: true, runValidators: true }
     );
+
+    if (!updatedProfile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
 
     console.log('Updated Profile:', updatedProfile); // Log the updated profile for debugging
 
     res.status(200).json(updatedProfile); // Return updated profile data
   } catch (err) {
+    console.error('Error updating profile:', err);
     res.status(500).json({ error: err.message });
   }
 });
