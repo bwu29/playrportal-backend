@@ -38,6 +38,14 @@ router.get('/profile', authMiddleware, async (req, res) => {
     const playerProfile = await Player.findOne({ userId: req.user.id });
     if (!playerProfile) return res.status(404).json({ message: 'Profile not found' });
 
+    // Convert profileImage and playerCV to base64 strings
+    if (playerProfile.profileImage) {
+      playerProfile.profileImage = playerProfile.profileImage.data.toString('base64');
+    }
+    if (playerProfile.playerCV) {
+      playerProfile.playerCV.data = playerProfile.playerCV.data.toString('base64');
+    }
+
     res.status(200).json(playerProfile);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -47,8 +55,15 @@ router.get('/profile', authMiddleware, async (req, res) => {
 // Update Player Profile
 router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
   const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
-  const profileImage = req.files['profileImage'] ? req.files['profileImage'][0].buffer : undefined;
-  const playerCV = req.files['playerCV'] ? req.files['playerCV'][0].buffer : undefined;
+  const profileImage = req.files['profileImage'] ? {
+    data: req.files['profileImage'][0].buffer,
+    contentType: req.files['profileImage'][0].mimetype
+  } : undefined;
+  const playerCV = req.files['playerCV'] ? {
+    data: req.files['playerCV'][0].buffer,
+    contentType: req.files['playerCV'][0].mimetype,
+    fileName: req.files['playerCV'][0].originalname
+  } : undefined;
 
   try {
     const updatedProfile = await Player.findOneAndUpdate(
@@ -73,6 +88,14 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
 
     if (!updatedProfile) {
       return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    // Convert profileImage and playerCV to base64 strings
+    if (updatedProfile.profileImage) {
+      updatedProfile.profileImage = updatedProfile.profileImage.data.toString('base64');
+    }
+    if (updatedProfile.playerCV) {
+      updatedProfile.playerCV.data = updatedProfile.playerCV.data.toString('base64');
     }
 
     console.log('Updated Profile:', updatedProfile); // Log the updated profile for debugging
