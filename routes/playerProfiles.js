@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const mongoose = require('mongoose');
-const { gfsBucket } = require('../db');  // Import the GridFS bucket
+const { connection, gfsBucket } = require('../db');  // Import the GridFS bucket
 const authMiddleware = require('../middleware/authMiddleware');
 const Player = require('../models/Player');
 
@@ -108,9 +108,13 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
 
 const saveFileToGridFS = async (buffer, filename) => {
   return new Promise((resolve, reject) => {
+    if (!gfsBucket) {
+      return reject(new Error('GridFSBucket is not initialized'));
+    }
     const uploadStream = gfsBucket.openUploadStream(filename);
     uploadStream.end(buffer, (err, file) => {
       if (err) {
+        console.error('Error saving file to GridFS:', err);
         reject(err);
       } else {
         resolve(file._id);
