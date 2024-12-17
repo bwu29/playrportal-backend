@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const { gfsBucket } = require('../db');  // Import the GridFS bucket
 const authMiddleware = require('../middleware/authMiddleware');
 const Player = require('../models/Player');
 
@@ -11,10 +12,12 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     if (file.fieldname === "profileImage") {
       if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+        console.error('Invalid file type for profile picture:', file.originalname);
         return cb(new Error('Only jpg, jpeg, and png files are allowed for profile pictures!'), false);
       }
     } else if (file.fieldname === "playerCV") {
       if (!file.originalname.match(/\.(pdf)$/)) {
+        console.error('Invalid file type for CV:', file.originalname);
         return cb(new Error('Only pdf files are allowed for CV!'), false);
       }
     }
@@ -30,6 +33,18 @@ const uploadFields = upload.fields([
   { name: 'playerCV', maxCount: 1 }
 ]);
 
+// Add multer error handling middleware
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    console.error('Multer error:', err);
+    return res.status(400).json({ error: `File upload error: ${err.message}` });
+  } else if (err) {
+    console.error('Upload error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+  next();
+};
+
 const router = express.Router();
 
 // Get Player Profile
@@ -38,14 +53,6 @@ router.get('/profile', authMiddleware, async (req, res) => {
     const playerProfile = await Player.findOne({ userId: req.user.id });
     if (!playerProfile) return res.status(404).json({ message: 'Profile not found' });
 
-    // Convert profileImage and playerCV to base64 strings
-    if (playerProfile.profileImage && playerProfile.profileImage.data) {
-      playerProfile.profileImage = playerProfile.profileImage.data.toString('base64');
-    }
-    if (playerProfile.playerCV && playerProfile.playerCV.data) {
-      playerProfile.playerCV.data = playerProfile.playerCV.data.toString('base64');
-    }
-
     res.status(200).json(playerProfile);
   } catch (err) {
     console.error('Error fetching profile:', err.message, err.stack);
@@ -53,59 +60,78 @@ router.get('/profile', authMiddleware, async (req, res) => {
   }
 });
 
-// Update Player Profile
-router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
-  const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
-  const profileImage = req.files['profileImage'] ? {
-    data: req.files['profileImage'][0].buffer,
-    contentType: req.files['profileImage'][0].mimetype
-  } : undefined;
-  const playerCV = req.files['playerCV'] ? {
-    data: req.files['playerCV'][0].buffer,
-    contentType: req.files['playerCV'][0].mimetype,
-    fileName: req.files['playerCV'][0].originalname
-  } : undefined;
-
+// Upload Files (Profile Image and CV) and Update Player Profile
+router.put('/profile', authMiddleware, uploadFields, handleMulterError, async (req, res) => {
   try {
+    const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
+
+    let profileImageFile;
+    let playerCVFile;
+
+    if (req.files && req.files['profileImage']) {
+      const profileImageBuffer = req.files['profileImage'][0].buffer;
+      const profileImageFilename = req.files['profileImage'][0].originalname;
+
+      // Save the file to GridFS
+      const profileImageId = await saveFileToGridFS(profileImageBuffer, profileImageFilename, 'profileImage');
+
+      profileImageFile = { id: profileImageId, filename: profileImageFilename };
+    }
+
+    if (req.files && req.files['playerCV']) {
+      const playerCVBuffer = req.files['playerCV'][0].buffer;
+      const playerCVFilename = req.files['playerCV'][0].originalname;
+
+      const playerCVId = await saveFileToGridFS(playerCVBuffer, playerCVFilename, 'playerCV');
+
+      playerCVFile = { id: playerCVId, filename: playerCVFilename };
+    }
+
+    const updateData = {
+      playerName,
+      birthYear,
+      proExperience,
+      positions: positions ? JSON.parse(positions) : [],
+      citizenship: citizenship ? JSON.parse(citizenship) : [],
+      highlightVideo,
+      fullMatchVideo,
+      email,
+      whatsapp,
+      agentEmail,
+      availability
+    };
+
+    if (profileImageFile) {
+      updateData.profileImage = profileImageFile;
+    }
+    if (playerCVFile) {
+      updateData.playerCV = playerCVFile;
+    }
+
     const updatedProfile = await Player.findOneAndUpdate(
       { userId: req.user.id },
-      { 
-        playerName, 
-        birthYear, 
-        proExperience, 
-        profileImage: profileImage !== undefined ? profileImage : null,
-        playerCV: playerCV !== undefined ? playerCV : null,
-        positions: positions ? JSON.parse(positions) : [],
-        citizenship: citizenship ? JSON.parse(citizenship) : [],
-        highlightVideo,
-        fullMatchVideo,
-        email,
-        whatsapp,
-        agentEmail,
-        availability
-      },
+      updateData,
       { new: true, upsert: true, runValidators: true }
     );
 
-    if (!updatedProfile) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
-
-    // Convert profileImage and playerCV to base64 strings
-    if (updatedProfile.profileImage && updatedProfile.profileImage.data) {
-      updatedProfile.profileImage = updatedProfile.profileImage.data.toString('base64');
-    }
-    if (updatedProfile.playerCV && updatedProfile.playerCV.data) {
-      updatedProfile.playerCV.data = updatedProfile.playerCV.data.toString('base64');
-    }
-
-    console.log('Updated Profile:', updatedProfile); // Log the updated profile for debugging
-
-    res.status(200).json(updatedProfile); // Return updated profile data
+    res.status(200).json(updatedProfile);
   } catch (err) {
-    console.error('Error updating profile:', err.message, err.stack);
+    console.error('Error updating profile:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
+const saveFileToGridFS = async (buffer, filename, folder) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = gfsBucket.openUploadStream(filename);
+    uploadStream.end(buffer, (err, file) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(file._id);
+      }
+    });
+  });
+};
 
 module.exports = router;
