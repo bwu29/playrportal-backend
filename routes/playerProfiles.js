@@ -53,21 +53,17 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
   try {
     const { playerName, birthYear, positions, citizenship, proExperience, highlightVideo, fullMatchVideo, email, whatsapp, agentEmail, availability } = req.body;
 
-    let profileImageBase64;
-    let profileImageName;
-    let playerCVBase64;
-    let playerCVName;
+    let profileImageBase64 = null;
+    let playerCVBase64 = null;
 
     if (req.files && req.files['profileImage']) {
       const profileImageBuffer = req.files['profileImage'][0].buffer;
       profileImageBase64 = profileImageBuffer.toString('base64');
-      profileImageName = req.files['profileImage'][0].originalname;
     }
 
     if (req.files && req.files['playerCV']) {
       const playerCVBuffer = req.files['playerCV'][0].buffer;
       playerCVBase64 = playerCVBuffer.toString('base64');
-      playerCVName = req.files['playerCV'][0].originalname;
     }
 
     const updateData = {
@@ -81,24 +77,10 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
       email: email || "",
       whatsapp: whatsapp || "",
       agentEmail: agentEmail || "",
-      availability: availability || ""
+      availability: availability || "",
+      profileImage: profileImageBase64,
+      playerCV: playerCVBase64
     };
-
-    if (profileImageBase64) {
-      updateData.profileImage = profileImageBase64;
-      updateData.profileImageName = profileImageName;
-    } else {
-      updateData.profileImage = "";
-      updateData.profileImageName = "";
-    }
-
-    if (playerCVBase64) {
-      updateData.playerCV = playerCVBase64;
-      updateData.playerCVName = playerCVName;
-    } else {
-      updateData.playerCV = "";
-      updateData.playerCVName = "";
-    }
 
     const updatedProfile = await Player.findOneAndUpdate(
       { userId: req.user.id },
