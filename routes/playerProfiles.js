@@ -108,16 +108,26 @@ router.put('/profile', authMiddleware, uploadFields, async (req, res) => {
 
 const saveFileToGridFS = async (buffer, filename) => {
   return new Promise((resolve, reject) => {
-    const gridFSBucket = getGridFSBucket();
-    const uploadStream = gridFSBucket.openUploadStream(filename);
-    uploadStream.end(buffer, (err, file) => {
-      if (err) {
-        console.error('Error saving file to GridFS:', err);
-        reject(err);
-      } else {
-        resolve(file._id);
-      }
-    });
+    try {
+      const gridFSBucket = getGridFSBucket();
+      const uploadStream = gridFSBucket.openUploadStream(filename);
+      uploadStream.end(buffer, (err, file) => {
+        if (err) {
+          console.error('Error saving file to GridFS:', err);
+          reject(err);
+        } else {
+          console.log('File saved to GridFS:', file);
+          if (file && file._id) {
+            resolve(file._id);
+          } else {
+            reject(new Error('File object is invalid'));
+          }
+        }
+      });
+    } catch (err) {
+      console.error('Error in saveFileToGridFS:', err.message, err.stack);
+      reject(err);
+    }
   });
 };
 
