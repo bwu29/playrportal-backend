@@ -7,7 +7,7 @@ const playerSchema = new mongoose.Schema({
   positions: { type: [String], default: [] },  // Array of strings
   citizenship: { type: [String], default: [] },  
   availability: { type: String },
-  proExperience: { type: Number },
+  proExperience: { type: String }, // Change to string
   profileImage: { type: String }, // Store as Base64 encoded string
   playerCV: { type: String }, // Store as Base64 encoded string
   highlightVideo: { type: String }, // Store as Base64 encoded string
