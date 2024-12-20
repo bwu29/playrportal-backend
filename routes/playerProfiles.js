@@ -50,6 +50,17 @@ router.get('/profile', authMiddleware, async (req, res) => {
   }
 });
 
+// Get All Player Profiles
+router.get('/all', authMiddleware, async (req, res) => {
+  try {
+    const players = await Player.find();
+    res.status(200).json(players);
+  } catch (err) {
+    console.error('Error fetching all player profiles:', err.message, err.stack);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Download Player CV
 router.get('/profile/downloadCV', authMiddleware, async (req, res) => {
   try {
