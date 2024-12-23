@@ -9,7 +9,7 @@ const path = require('path');
 const multer = require('multer'); // Ensure multer is imported
 const bodyParser = require('body-parser'); // Add body-parser
 require('dotenv').config();
-
+const contactRequestsRoutes = require('./routes/contactRequests'); // Import contact requests routes
 const authRoutes = require('./routes/auth');
 const playerProfiles = require('./routes/playerProfiles');
 const clubProfiles = require('./routes/clubProfiles');
@@ -72,6 +72,7 @@ mongoose
 app.use('/api/auth', authRoutes);
 app.use('/api/playerProfiles', playerProfiles);
 app.use('/api/clubProfiles', clubProfiles);
+app.use('/api/contactRequests', contactRequestsRoutes); // Use contact requests routes
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
