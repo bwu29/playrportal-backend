@@ -100,5 +100,3 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('CORS enabled for:', process.env.CORS_ORIGIN);
 });
-
-
