@@ -21,10 +21,10 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const newContactRequest = new ContactRequest({
       clubId,
-      clubEmail: club.email,
-      clubName: club.clubName,
+      clubEmail: club.email || null,
+      clubName: club.clubNames,
       playerId,
-      playerEmail: player.email,
+      playerEmail: player.email || null, // Handle cases where playerEmail might be null
       playerName: player.playerName
     });
 

@@ -7,17 +7,11 @@ const router = express.Router();
 // Get Saved Players for Club
 router.get('/savedPlayers', authMiddleware, async (req, res) => {
   try {
-    console.log('Fetching saved players for user:', req.user.id); // Debug log
     const club = await Club.findOne({ userId: req.user.id }).populate('savedPlayers.playerId');
-    if (!club) {
-      console.log('Club not found for user:', req.user.id); // Debug log
-      return res.status(404).json({ message: 'Club not found' });
-    }
+    if (!club) return res.status(404).json({ message: 'Club not found' });
 
-    console.log('Saved players:', club.savedPlayers); // Debug log
     res.status(200).json(club.savedPlayers.map(savedPlayer => savedPlayer.playerId));
   } catch (err) {
-    console.error('Error fetching saved players:', err); // Debug log
     res.status(500).json({ error: err.message });
   }
 });
