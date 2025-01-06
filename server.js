@@ -8,10 +8,8 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const multer = require('multer'); // Ensure multer is imported
 const bodyParser = require('body-parser'); // Add body-parser
-const { connectDB } = require('./config/db'); // Import connectDB correctly
-const waitlistRoutes = require('./routes/waitlist'); // Import waitlist routes
 require('dotenv').config();
-
+const contactRequestsRoutes = require('./routes/contactRequests'); // Import contact requests routes
 const authRoutes = require('./routes/auth');
 const playerProfiles = require('./routes/playerProfiles');
 const clubProfiles = require('./routes/clubProfiles');
@@ -70,14 +68,11 @@ mongoose
         process.exit(1); // Exit if the connection fails
     });
 
-// Connect Database
-connectDB();
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/playerProfiles', playerProfiles);
 app.use('/api/clubProfiles', clubProfiles);
-app.use('/api/waitlist', waitlistRoutes); // Use waitlist routes
+app.use('/api/contactRequests', contactRequestsRoutes); // Use contact requests routes
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
@@ -106,5 +101,3 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('CORS enabled for:', process.env.CORS_ORIGIN);
 });
-
-
