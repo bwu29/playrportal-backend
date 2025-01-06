@@ -1,6 +1,7 @@
 const express = require('express');
 const authMiddleware = require('../middleware/authMiddleware');
 const Club = require('../models/Club');
+const User = require('../models/User'); // Import User model
 
 const router = express.Router();
 
@@ -21,8 +22,8 @@ router.get('/profile', authMiddleware, async (req, res) => {
   try {
     let clubProfile = await Club.findOne({ userId: req.user.id });
     if (!clubProfile) {
-      // Create empty profile if none exists
-      clubProfile = new Club({ userId: req.user.id });
+      const user = await User.findById(req.user.id);
+      clubProfile = new Club({ userId: req.user.id, email: user.email });
       await clubProfile.save();
     }
     res.status(200).json(clubProfile);

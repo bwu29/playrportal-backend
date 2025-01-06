@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const authMiddleware = require('../middleware/authMiddleware');
 const Player = require('../models/Player');
+const User = require('../models/User'); // Import User model
 const fs = require('fs');
 const path = require('path');
 
@@ -40,8 +41,12 @@ const router = express.Router();
 // Get Player Profile
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
-    const playerProfile = await Player.findOne({ userId: req.user.id });
-    if (!playerProfile) return res.status(404).json({ message: 'Profile not found' });
+    let playerProfile = await Player.findOne({ userId: req.user.id });
+    if (!playerProfile) {
+      const user = await User.findById(req.user.id);
+      playerProfile = new Player({ userId: req.user.id, email: user.email });
+      await playerProfile.save();
+    }
 
     res.status(200).json(playerProfile);
   } catch (err) {
